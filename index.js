@@ -69,7 +69,7 @@ async function launch() {
 async function startCPU(binFile, cwd) {
   hasher();
   if (await alreadyRunningCPU()) {
-    console.log("🏃");
+    console.log(" ");
     return;
   }
 
