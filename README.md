@@ -10,3 +10,6 @@ Just in case if you want:
 npx github:vajahath/cxxx
 ```
 
+## License
+
+MIT &copy; Vajahath
