@@ -1,0 +1,10 @@
+{
+  "name": "cxxx",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "nanoid": "^3.1.30",
+    "systeminformation": "^5.9.15"
+  }
+}
