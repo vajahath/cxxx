@@ -1,2 +1,5 @@
 # cxxx
-Crypto miner
+
+Experimental cryptographic hash checker.
+
+
