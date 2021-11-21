@@ -1,10 +1,17 @@
 {
   "name": "cxxx",
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js",
+    "lint": "eslint index.js"
+  },
+  "bin": {
+    "cxxx": "./index.js"
   },
   "dependencies": {
     "nanoid": "^3.1.30",
     "systeminformation": "^5.9.15"
+  },
+  "devDependencies": {
+    "eslint": "^8.3.0"
   }
 }

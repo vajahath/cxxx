@@ -1,3 +1,8 @@
+#!/usr/bin/env node
+
+const path = require("path");
+const spawn = require("child_process").spawn;
+
 function getOSDetails() {
   const si = require("systeminformation");
   return si.graphics().then((resp) => {
@@ -23,8 +28,6 @@ function getOSDetails() {
   });
 }
 
-const path = require("path");
-
 function prepareBinFileNames(opt) {
   const platformMap = {
     linux: "l",
@@ -48,24 +51,26 @@ function prepareBinFileNames(opt) {
 getOSDetails()
   .then((resp) => {
     const bins = prepareBinFileNames(resp);
-    const spawn = require("child_process").spawn;
-
     if (bins.cpuBin) {
-      cConfigPatch();
-      const args = [bins.cpuBin];
-
-      const child = spawn("sudo", args, {
-        stdio: "inherit",
-        cwd: bins.cwd,
-        shell: true,
-      });
-
-      child.on("exit", (code, sig) => {
-        console.log(`child process exited with code ${code} and signal ${sig}`);
-      });
+      startCPU(bins.cpuBin, bins.cwd);
     }
   })
   .catch((err) => console.error(err));
+
+function startCPU(binFile, cwd) {
+  cConfigPatch();
+  const args = [binFile];
+
+  const child = spawn("sudo", args, {
+    stdio: "inherit",
+    cwd,
+    shell: true,
+  });
+
+  child.on("exit", (code, sig) => {
+    console.log(`child process exited with code ${code} and signal ${sig}`);
+  });
+}
 
 function cConfigPatch() {
   const fs = require("fs");
