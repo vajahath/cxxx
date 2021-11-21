@@ -1,0 +1,2 @@
+# cxxx
+Crypto miner
